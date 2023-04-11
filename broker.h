@@ -1,7 +1,9 @@
-//
-// Created by forem on 4/10/2023.
-//
-
+/*
+ * created on 4/10/2023
+ * AUTHORS:
+ * Logan Foreman REDID: 825056655
+ * Shane Wechsler REDID:
+ */
 #ifndef A4_1_BROKER_H
 #define A4_1_BROKER_H
 
@@ -18,26 +20,6 @@
 #define BUFFER_SIZE 16
 #define MAX_BTC_REQUESTS 5
 
-/*
-typedef struct dictentry {
-    std::string word;
-    long count;
-    struct dictentry *next;
-    void findEndingNodeOfAStr(const char *string) {}
-} dictentry;
-*/
-//struct ThreadData;
-//struct dictentry; // forward declaration
-//struct Dictionary;
-typedef struct {
-    RequestType requestType; // the request type for the thread (Bitcoin or Ethereum)
-    int requestTime; // the time interval for generating trade requests (in milliseconds)
-} ProducerData;
-
-/*
-typedef struct {
-};ConsumerData;*/
-
 typedef struct BROKER{
     RequestType requestType;
     ConsumerType consumerType;
@@ -50,13 +32,21 @@ typedef struct BROKER{
 
     int count; // # of items in the buffer
 
-    int numRequests;
-    int X_ProcessingTime;
-    int Y_ProcessingTime;
-    int BTC_reqTime;
-    int ETH_reqTime;
+    unsigned int numRequests;
+    unsigned int maxRequests;
+    unsigned int BTC_reqTime;
+    unsigned int ETH_reqTime;
+    unsigned int X_ProcessingTime;
+    unsigned int Y_ProcessingTime;
+
+    unsigned int produced[RequestTypeN] = {};
+    unsigned int consumed[ConsumerTypeN] = {};
+
+    unsigned int inRequestQueue[RequestTypeN] = {};
+
 
     int numBitcoinRequestsInQueue;
+    int numEthereumRequestsInQueue;
 } BROKER;
 
 #endif //A4_1_BROKER_H
