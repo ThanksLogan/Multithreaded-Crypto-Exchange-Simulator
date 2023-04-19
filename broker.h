@@ -26,21 +26,14 @@ public:
     ConsumerType consumerType;
     std::queue<RequestType> boundedBuffer; // Bounded buffer queue
     pthread_mutex_t bufferMutex; // Bounded buffer mutex
-    //pthread_mutex_t producerMutex;
-    //pthread_mutex_t consumerMutex;
 
     sem_t full; // waits for buffer to be non-full, counts number of full slots
 
     sem_t empty; // waits for buffer to be non-empty, counts number of empty slots
 
-    sem_t btcEmpty;
-    sem_t btcFull;
+    sem_t btc;
 
-    //sem_t maxReq;
-    //sem_t consumedNum;
     sem_t finished;
-
-   // pthread_cond_t done;
 
 
     int count; // # of items in the buffer

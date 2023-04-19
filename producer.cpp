@@ -29,7 +29,7 @@ void* producer(void* ptr){
          * that it does not get stuck only publishing BTC pushes.
          */
         if(data->requestType == Bitcoin){
-            sem_wait(&data->broker->btcFull);
+            sem_wait(&data->broker->btc);
         }
         sem_wait(&data->broker->empty); // wait until there is space in the buffer
         usleep(data->requestTime*1000);

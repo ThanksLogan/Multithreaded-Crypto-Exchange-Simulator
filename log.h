@@ -54,4 +54,3 @@ void log_request_removed(Consumers consumers, RequestType type,
 */
 void log_production_history(unsigned int produced[], unsigned int *consumed[]);
 #endif //A4_1_LOG_H
-
