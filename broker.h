@@ -20,33 +20,39 @@
 #define BUFFER_SIZE 16
 #define MAX_BTC_REQUESTS 5
 
-typedef struct BROKER{
+class BROKER{
+public:
     RequestType requestType;
     ConsumerType consumerType;
     std::queue<RequestType> boundedBuffer; // Bounded buffer queue
     pthread_mutex_t bufferMutex; // Bounded buffer mutex
+    //pthread_mutex_t producerMutex;
+    //pthread_mutex_t consumerMutex;
 
     sem_t full; // waits for buffer to be non-full, counts number of full slots
 
     sem_t empty; // waits for buffer to be non-empty, counts number of empty slots
 
+    sem_t btcEmpty;
+    sem_t btcFull;
+
+    //sem_t maxReq;
+    //sem_t consumedNum;
+    sem_t finished;
+
+   // pthread_cond_t done;
+
+
     int count; // # of items in the buffer
 
     unsigned int numRequests;
     unsigned int maxRequests;
-    unsigned int BTC_reqTime;
-    unsigned int ETH_reqTime;
-    unsigned int X_ProcessingTime;
-    unsigned int Y_ProcessingTime;
 
     unsigned int produced[RequestTypeN] = {};
-    unsigned int consumed[ConsumerTypeN] = {};
+    unsigned int *consumed[ConsumerTypeN];
 
     unsigned int inRequestQueue[RequestTypeN] = {};
-
-
-    int numBitcoinRequestsInQueue;
-    int numEthereumRequestsInQueue;
-} BROKER;
+    unsigned int maxRequestsEach[RequestTypeN];
+};
 
 #endif //A4_1_BROKER_H

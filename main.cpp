@@ -102,32 +102,53 @@ int main(int argc, char **argv) {
     broker.boundedBuffer = std::queue<RequestType>();
 
     pthread_mutex_init(&broker.bufferMutex, NULL);
+    //pthread_mutex_init(&broker.consumerMutex, NULL);
+    //pthread_mutex_init(&broker.producerMutex, NULL);
+    //pthread_cond_init(&broker.done, NULL);
 
     broker.count = count;
-    broker.produced[RequestTypeN] = {};
-    broker.consumed[ConsumerTypeN] = {};
+    broker.produced[Bitcoin] = 0;
+    broker.produced[Ethereum] = 0;
+    unsigned int ConsumedX[RequestTypeN] = {0,0};
+    unsigned int ConsumedY[RequestTypeN] = {0,0};
+    broker.consumed[BlockchainX] = ConsumedX;
+    broker.consumed[BlockchainY] = ConsumedY;
     broker.inRequestQueue[RequestTypeN] = {};
-    broker.numBitcoinRequestsInQueue = 0;
-    broker.numEthereumRequestsInQueue = 0;
 
 
     broker.maxRequests = maxRequests;
     broker.numRequests = numRequests;
-    broker.BTC_reqTime = BTC_reqTime;
-    broker.ETH_reqTime = ETH_reqTime;
-    broker.X_ProcessingTime = X_ProcessingTime;
-    broker.Y_ProcessingTime = Y_ProcessingTime;
 
     /* -- TESTING DIFFERENT REQUEST AMOUNTS & TIMES -- */
-        broker.maxRequests = 100;
-        broker.BTC_reqTime = 120;
-        broker.ETH_reqTime = 1;
-        broker.X_ProcessingTime = 5;
-        broker.Y_ProcessingTime = 1;
-    /* ----------------------------------------------- */
+    PRODUCER prodBitData;
+    prodBitData.broker = &broker;
+    prodBitData.requestType = Bitcoin;
+    prodBitData.requestTime = BTC_reqTime;
+    PRODUCER prodEthData;
+    prodEthData.broker = &broker;
+    prodEthData.requestType = Ethereum;
+    prodEthData.requestTime = ETH_reqTime;
+    CONSUMER conXData;
+    conXData.broker = &broker;
+    conXData.consumerType = BlockchainX;
+    conXData.consumerTime = X_ProcessingTime;
+    CONSUMER conYData;
+    conYData.broker = &broker;
+    conYData.consumerType = BlockchainY;
+    conYData.consumerTime = Y_ProcessingTime;
 
-    sem_init(&(broker.empty), 0, BUFFER_SIZE);
+    /* ----------------------------------------------- */
+    //int maxSemaphoreLimit = maxRequests * -1;
+
+    sem_init(&(broker.empty), 0, BUFFER_SIZE+1);
     sem_init(&(broker.full),0,0);
+    sem_init(&(broker.btcEmpty), 0, MAX_BTC_REQUESTS);
+    sem_init(&(broker.btcFull),0,0);
+    sem_init(&(broker.finished), 0, 0); // number of resources
+    //sem_init(&(broker.consumedNum), 0, maxRequests); // number of resources
+    //sem_post(&(broker.finished));
+
+
     /*----------------------------------------------------------*/
 
 
@@ -137,60 +158,47 @@ int main(int argc, char **argv) {
     pthread_t xConsumerThread;
     pthread_t yConsumerThread;
     /* BTC producer */
-    if (pthread_create(&btcProducerThread, NULL, &producer, &broker)) {
+    if (pthread_create(&btcProducerThread, NULL, &producer, &prodBitData)) {
         std::cerr << "Error: failed to create thread for producer (btc)" << std::endl;
         exit(-1);
     }
     /* ETH producer */
-    if (pthread_create(&ethProducerThread, NULL, &producer, &broker)) {
+    if (pthread_create(&ethProducerThread, NULL, &producer, &prodEthData)) {
         std::cerr << "Error: failed to create thread for producer (eth)" << std::endl;
         exit(-1);
     }
     /* Blockchain X producer*/
-    if (pthread_create(&xConsumerThread, NULL, &consumer, &broker)) {
+    if (pthread_create(&xConsumerThread, NULL, &consumer, &conXData)) {
         std::cerr << "Error: failed to create thread for consumer (X)" << std::endl;
         exit(-1);
     }
     /* Blockchain Y producer */
-    if (pthread_create(&yConsumerThread, NULL, &consumer, &broker)) {
+    if (pthread_create(&yConsumerThread, NULL, &consumer, &conYData)) {
         std::cerr << "Error: failed to create thread for consumer (Y)" << std::endl;
         exit(-1);
     }
-
     /*------------------------------------------------------------------------------------------*/
 
 
-    /* TODO: see if we need these
-    // destroy semaphores
-    sem_destroy(&(shared_data->wait));
-    sem_destroy(&(shared_data->full));
-     */
-
-
-    /* OLD STRATEGIES FOR THREAD CALLING WITH WORKAROUND 'PARAMETERS':
-    RequestType requestType;
-    ConsumerType consumerType;
-    struct ThreadArgs {
-        void* arg1;
-        void* arg2;
-    };
-
-     * //requestType = Bitcoin;
-    //ThreadArgs btcArgs = { (void*) &broker, (void*) &requestType };
-    //broker.requestType = Bitcoin;
-    //broker.requestType = Ethereum;
-    //ThreadArgs ethArgs = { (void*) &broker, (void*) &requestType };
-     *
-     *
-     * //broker.consumerType = BlockchainX;
-    //ThreadArgs xArgs = { (void*) &broker, (void*) &consumerType };
-     * //broker.consumerType = BlockchainY;
-    //ThreadArgs yArgs = { (void*) &broker, (void*) &consumerType };
-     */
+    //pthread_mutex_lock(&broker.bufferMutex);
+    //pthread_cond_wait(&broker.pDone, &broker.bufferMutex);
     while(true){
-        std::cout << "";
+        sem_wait(&broker.finished);
+        pthread_join(btcProducerThread, NULL);
+        pthread_join(ethProducerThread, NULL);
+        pthread_join(xConsumerThread, NULL);
+        pthread_join(yConsumerThread, NULL);
+        log_production_history(broker.produced, broker.consumed);
+        return 0;
     }
-    std::cout << "Hello, World!" << std::endl;
-    return 0;
+    //pthread_cond_wait(&broker.done, &broker.bufferMutex);
+    //pthread_mutex_unlock(&broker.bufferMutex);
+    //pthread_mutex_destroy(&broker.bufferMutex);
+    //pthread_mutex_destroy(&broker.consumerMutex);
+    //pthread_mutex_destroy(&broker.producerMutex);
+
+    //sem_post(&broker.maxReq); // will wait until number of consumed items reaches 0
+    //sem_wait(&broker.consumedNum); // will wait until number of consumed items reaches 0
+
 }
 
