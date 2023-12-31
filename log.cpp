@@ -1,9 +1,4 @@
-/*
- * created on 4/10/2023
- * AUTHORS:
- * Logan Foreman REDID: 825056655
- * Shane Wechsler REDID:
- */
+ 
 #include <stdio.h>
 #include <time.h>
 #include "log.h"

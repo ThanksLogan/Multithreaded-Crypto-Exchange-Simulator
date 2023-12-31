@@ -1,9 +1,4 @@
-/*
- * created on 4/10/2023
- * AUTHORS:
- * Logan Foreman REDID: 825056655
- * Shane Wechsler REDID:
- */
+ 
 #ifndef A4_1_BROKER_H
 #define A4_1_BROKER_H
 

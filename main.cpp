@@ -1,9 +1,4 @@
-/*
- * created on 4/10/2023
- * AUTHORS:
- * Logan Foreman REDID: 825056655
- * Shane Wechsler REDID:
- */
+ 
 #include <iostream>
 #include <string.h>
 #include <cstdio>
@@ -116,7 +111,7 @@ int main(int argc, char **argv) {
     broker.maxRequests = maxRequests;
     broker.numRequests = numRequests;
 
-    /* -- TESTING DIFFERENT REQUEST AMOUNTS & TIMES -- */
+    /* -- ASSIGNING COMMAND LINE ARGS TO VALUES -- */
     PRODUCER prodBitData;
     prodBitData.broker = &broker;
     prodBitData.requestType = Bitcoin;
@@ -136,12 +131,11 @@ int main(int argc, char **argv) {
 
     /* ----------------------------------------------- */
 
-    sem_init(&(broker.empty), 0, BUFFER_SIZE+1);
+    sem_init(&(broker.empty), 0, BUFFER_SIZE);
     sem_init(&(broker.full),0,0);
     sem_init(&(broker.btc),0, MAX_BTC_REQUESTS);
     sem_init(&(broker.finished), 0, 0);
     /*----------------------------------------------------------*/
-
 
     /*-------------- Create 2 Producer and 2 Consumer Threads -----------------------*/
     pthread_t btcProducerThread;
@@ -171,35 +165,8 @@ int main(int argc, char **argv) {
 
     /*------------------------------------------------------------------------------------------*/
 
-    /* TODO: see if we need these
-    // destroy semaphores
-    sem_destroy(&(shared_data->wait));
-    sem_destroy(&(shared_data->full));
-     */
-
-
-    /* OLD STRATEGIES FOR THREAD CALLING WITH WORKAROUND 'PARAMETERS':
-    RequestType requestType;
-    ConsumerType consumerType;
-    struct ThreadArgs {
-        void* arg1;
-        void* arg2;
-    };
-
-     * //requestType = Bitcoin;
-    //ThreadArgs btcArgs = { (void*) &broker, (void*) &requestType };
-    //broker.requestType = Bitcoin;
-    //broker.requestType = Ethereum;
-    //ThreadArgs ethArgs = { (void*) &broker, (void*) &requestType };
-     *
-     *
-     * //broker.consumerType = BlockchainX;
-    //ThreadArgs xArgs = { (void*) &broker, (void*) &consumerType };
-     * //broker.consumerType = BlockchainY;
-    //ThreadArgs yArgs = { (void*) &broker, (void*) &consumerType };
-     */
     while(true){
-        std::cout << "";
+        //std::cout << "";
         sem_wait(&broker.finished);
         pthread_cancel(btcProducerThread);
         pthread_cancel(ethProducerThread);
